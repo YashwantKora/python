@@ -3,73 +3,58 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
+import matplotlib.pyplot as plt
 
-# 2️⃣ Load
+# 2️⃣ Load MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# 3️⃣ Prepare (reshape + normalize)
+# Make a copy so we can show images later (not flattened)
+x_test_copy = x_test.copy()
+
+# 3️⃣ Show a test image (index 1)
+index = 1     # YOU CAN CHANGE THIS TO ANY DIGIT YOU WANT TO TEST
+plt.imshow(x_test_copy[index], cmap='gray')
+plt.title(f"Actual Digit: {y_test[index]}")
+plt.show()
+
+# 4️⃣ Prepare the data (flatten + normalize)
 x_train = x_train.reshape(60000, 28*28).astype('float32') / 255
 x_test  = x_test.reshape(10000, 28*28).astype('float32') / 255
 
-# 4️⃣ Model (build the neural network)
+# 5️⃣ Build the model
 model = Sequential()
 model.add(Dense(32, input_dim=28*28, activation='relu'))
 model.add(Dense(32, activation='relu'))
-model.add(Dense(10, activation='softmax'))  # 10 digits (0–9)
+model.add(Dense(10, activation='softmax'))   # 10 classes (0–9)
 
-# 5️⃣ Train + Evaluate
-model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=10, batch_size=128)
+# 6️⃣ Train
+model.compile(loss='sparse_categorical_crossentropy',
+              optimizer='adam',
+              metrics=['accuracy'])
+
+history = model.fit(x_train, y_train, epochs=10, batch_size=128)
+
+# 7️⃣ Evaluate
 loss, acc = model.evaluate(x_test, y_test)
 print("Test Accuracy:", acc)
 
-# Optional: Predict one sample
+# 8️⃣ Predict the SAME image shown above
 y_pred = model.predict(x_test)
-print("Predicted digit:", np.argmax(y_pred[0]))
+predicted_digit = np.argmax(y_pred[index])
 
+print("Predicted Digit for shown image:", predicted_digit)
+print("Actual Digit:", y_test[index])
 
+# 9️⃣ Plot training accuracy
+plt.plot(history.history['accuracy'])
+plt.title("Training Accuracy")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.show()
 
-# from keras.datasets import mnist
-# data=mnist.load_data()
-# print(data)
-
-# (x_train, y_train), (x_test, y_test)= data
-# x_train [0].shape
-# x_train.shape
-
-# x_test_copy = x_test [:] [:]
-# y_train [0]
-
-# import matplotlib.pyplot as plt
-# plt.imshow(x_test [1], cmap ='gray')
-
-# y_train [0]
-
-# x_train= x_train.reshape ((x_train. shape[0], 28*28)).astype('float32')
-# x_test=x_test.reshape ((x_test.shape[0], 28*28)).astype('float32')
-# x_train= x_train / 255
-# x_test =x_test / 255
-# x_train.shape
-
-# from keras.models import Sequential
-# from keras.layers import Dense
-# model=Sequential ()
-# model.add(Dense(32,input_dim= 28*28, activation = 'relu'))
-# model.add(Dense(32, activation = 'relu'))
-# model.add(Dense(32, activation = 'softmax'))
-
-# model.compile(loss= 'sparse_categorical_crossentropy',optimizer = 'adam',metrics=['accuracy'])
-
-# model.fit (x_train, y_train, epochs=20, batch_size=128)
-
-# loss, acc = model.evaluate (x_test, y_test, batch_size=128)
-
-# y_pred=model.predict(x_test)
-
-# plt.imshow(x_test_copy [0], cmap="gray")
-
-# y_pred [0]
-# import numpy as np
-# np. argmax(y_pred[0], axis = -1)
-# y_test[0]
-
+# 🔟 Plot training loss
+plt.plot(history.history['loss'])
+plt.title("Training Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.show()
